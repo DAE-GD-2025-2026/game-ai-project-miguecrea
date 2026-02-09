@@ -17,14 +17,11 @@ class GAMEAIPROG_API ALevel_SteeringBehaviors : public ALevel_Base
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this actor's properties
 	ALevel_SteeringBehaviors();
 
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	
 	virtual void BeginDestroy() override;
@@ -38,8 +35,6 @@ private:
 		Arrive,
 		Evade,
 		Pursuit,
-
-		// @ End
 		Count
 	};
 

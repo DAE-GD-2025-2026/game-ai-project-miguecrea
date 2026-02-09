@@ -3,14 +3,11 @@
 #include "imgui.h"
 
 
-// Sets default values
 ALevel_CombinedSteering::ALevel_CombinedSteering()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-// Called when the game starts or when spawned
 void ALevel_CombinedSteering::BeginPlay()
 {
 	Super::BeginPlay();
@@ -23,13 +20,11 @@ void ALevel_CombinedSteering::BeginDestroy()
 
 }
 
-// Called every frame
 void ALevel_CombinedSteering::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
 #pragma region UI
-	//UI
 	{
 		//Setup
 		bool windowActive = true;

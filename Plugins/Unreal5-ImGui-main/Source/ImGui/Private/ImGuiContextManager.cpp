@@ -30,7 +30,9 @@ namespace
 		using namespace Utilities;
 
 		const FWorldContext* WorldContext = GetWorldContext(World);
-		switch (WorldContext->WorldType)
+		
+		
+		switch(WorldContext->WorldType)
 		{
 		case EWorldType::PIE:
 			return FString::Printf(TEXT("PIEContext%d"), GetWorldContextIndex(*WorldContext));

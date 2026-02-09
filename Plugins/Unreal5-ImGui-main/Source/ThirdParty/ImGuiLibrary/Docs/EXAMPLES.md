@@ -203,7 +203,8 @@ You may experiment with enabling the io.MouseDrawCursor flag to request Dear ImG
 using the regular graphics API, to help you visualize the difference between a "hardware" cursor and a
 regularly rendered software cursor.
 However, rendering a mouse cursor at 60 FPS will feel sluggish so you likely won't want to enable that at
-all times. It might be beneficial for the user experience to switch to a software rendered cursor _only_
+all times. It might be beneficial for the user experience to 
+to a software rendered cursor _only_
 when an interactive drag is in progress.
 
 Note that some setup or GPU drivers are likely to be causing extra display lag depending on their settings.
