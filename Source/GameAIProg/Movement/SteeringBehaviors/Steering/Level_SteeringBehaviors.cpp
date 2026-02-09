@@ -223,6 +223,7 @@ void ALevel_SteeringBehaviors::SetAgentBehavior(ImGui_Agent& Agent)
 {
 	Agent.Behavior.reset();
 
+
 	switch (static_cast<BehaviorTypes>(Agent.SelectedBehavior))
 	{
 	case  BehaviorTypes::Seek:
@@ -245,23 +246,20 @@ void ALevel_SteeringBehaviors::SetAgentBehavior(ImGui_Agent& Agent)
 
 		break;
 
+	case  BehaviorTypes::Arrive:
+
+		Agent.Behavior = std::make_unique<Arrive>();
+
+		break;
+
 	case  BehaviorTypes::Evade:
 
 		Agent.Behavior = std::make_unique<Evade>();
-
-
 		break;
 
 	case  BehaviorTypes::Pursuit:
 
 		Agent.Behavior = std::make_unique<Pursuit>();
-
-
-		break;
-
-	case  BehaviorTypes::Arrive:
-
-		Agent.Behavior = std::make_unique<Arrive>();
 
 		break;
 
