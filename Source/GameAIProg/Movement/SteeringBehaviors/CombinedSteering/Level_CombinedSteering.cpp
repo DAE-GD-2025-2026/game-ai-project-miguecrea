@@ -62,6 +62,9 @@ void ALevel_CombinedSteering::Tick(float DeltaTime)
 	
 		if (ImGui::Checkbox("Debug Rendering", &CanDebugRender))
 		{
+
+
+
    // TODO: Handle the debug rendering of your agents here :)
 		}
 		ImGui::Checkbox("Trim World", &TrimWorld->bShouldTrimWorld);
