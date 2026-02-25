@@ -11,8 +11,14 @@ SteeringOutput Cohesion::CalculateSteering(float deltaT, ASteeringAgent& pAgent)
 	return SteeringOutput{};
 }
 
-//*********************
-//SEPARATION (FLOCKING)
 
-//*************************
-//VELOCITY MATCH (FLOCKING)
+
+SteeringOutput Separation::CalculateSteering(float deltaT, ASteeringAgent& pAgent)
+{
+	return SteeringOutput();
+}
+
+SteeringOutput VelocityMatch::CalculateSteering(float deltaT, ASteeringAgent& pAgent)
+{
+	return SteeringOutput();
+}

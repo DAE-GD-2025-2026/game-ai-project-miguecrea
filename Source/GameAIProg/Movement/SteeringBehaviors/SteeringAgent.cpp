@@ -2,15 +2,26 @@
 
 #include "SteeringAgent.h"
 
+#include "Components/SkeletalMeshComponent.h"
+
 
 ASteeringAgent::ASteeringAgent()
 {
 	PrimaryActorTick.bCanEverTick = true;
+
+
 }
 
 void ASteeringAgent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	m_MeshComponent = GetComponentByClass<USkeletalMeshComponent>();
+
+	if (m_MeshComponent)
+	{
+		UE_LOG(LogTemp,Warning,TEXT("Succeded"))
+	}
 }
 
 void ASteeringAgent::BeginDestroy()
@@ -24,8 +35,27 @@ void ASteeringAgent::Tick(float DeltaTime)
 
 	if (SteeringBehavior)
 	{
+		// The angular velocity is not being usedddd
 		SteeringOutput output = SteeringBehavior->CalculateSteering(DeltaTime, *this);
 		AddMovementInput(FVector{output.LinearVelocity, 0.f});
+
+		if (!IsAutoOrienting())
+		{
+			AddControllerYawInput(output.AngularVelocity);
+		}
+	}
+}
+
+float ASteeringAgent::GetMeshZPosition()
+{
+	if (m_MeshComponent)
+	{
+	   return m_MeshComponent->GetComponentLocation().Z;
+	}
+	else
+	{
+		//I should Use Optional 
+		return 0.0f;
 	}
 }
 

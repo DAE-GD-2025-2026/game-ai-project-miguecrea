@@ -43,6 +43,9 @@
  * 
  */
 
+
+class UMeshComponent;
+
 UCLASS()
 class GAMEAIPROG_API ASteeringAgent : public ABaseAgent
 {
@@ -61,6 +64,12 @@ protected:
 
 public:
 	virtual void Tick(float DeltaTime) override;
+
+
+	USkeletalMeshComponent * m_MeshComponent;
+
+
+	float GetMeshZPosition();
 
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 

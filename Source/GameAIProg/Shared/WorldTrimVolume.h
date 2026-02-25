@@ -33,10 +33,11 @@ public:
 
 	void SetTrimWorldSize(float NewSize);
 	float GetTrimWorldSize() const { return TrimWorldSize; }
+	FVector GetRamdomPosInTrimVolumne();
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UBoxComponent* TrimVolume{};
+	UBoxComponent * TrimVolume{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float TrimWorldSize{1000.f};
@@ -45,5 +46,6 @@ protected:
 	virtual void BeginPlay() override;
 
 	virtual void NotifyActorEndOverlap(AActor * OtherActor) override;
+
 	
 };

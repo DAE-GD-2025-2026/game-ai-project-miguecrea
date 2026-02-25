@@ -7,7 +7,7 @@ class Flock;
 class Cohesion final : public Seek
 {
 public:
-	Cohesion(Flock* const pFlock) :pFlock(pFlock) {};
+	Cohesion(Flock * const pFlock) :pFlock(pFlock) {};
 
 	//Cohesion Behavior
 	SteeringOutput CalculateSteering(float deltaT, ASteeringAgent& pAgent) override;
@@ -16,8 +16,27 @@ private:
 	Flock* pFlock = nullptr;
 };
 
-//SEPARATION - FLOCKING
-//*********************
 
-//VELOCITY MATCH - FLOCKING
-//************************
+class Separation final : public Seek
+{
+public:
+	Separation(Flock * const pFlock) :pFlock(pFlock) {};
+
+	//Cohesion Behavior
+	SteeringOutput CalculateSteering(float deltaT, ASteeringAgent & pAgent) override;
+
+private:
+	Flock * pFlock = nullptr;
+};
+
+class VelocityMatch final : public Seek
+{
+public:
+	VelocityMatch(Flock* const pFlock) :pFlock(pFlock) {};
+
+	//Cohesion Behavior
+	SteeringOutput CalculateSteering(float deltaT, ASteeringAgent& pAgent) override;
+
+private:
+	Flock * pFlock = nullptr;
+};

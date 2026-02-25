@@ -28,6 +28,9 @@ public:
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+
+	FVector GetRamdomPosInVolumeBox();
 	
 protected:
 	// Common UI Vars
@@ -40,7 +43,7 @@ protected:
 	bool VisualizeMouseTarget{true}; // unused so far
 
 	UPROPERTY(EditAnywhere)
-	AWorldTrimVolume* TrimWorld{nullptr};
+	AWorldTrimVolume * TrimWorld{nullptr};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<ASteeringAgent> SteeringAgentClass{};

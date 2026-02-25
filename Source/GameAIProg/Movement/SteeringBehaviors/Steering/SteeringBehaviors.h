@@ -15,15 +15,17 @@ public:
 	// Override to implement your own behavior
 	virtual SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent & Agent) = 0;
 
-	void SetTarget(const FTargetData & NewTarget) { Target = NewTarget; }
+	void SetTarget(const FTargetData & NewTarget) { m_Target = NewTarget; }
 	
 	FVector2D AtoB(FVector2D self,FVector2D target);
 	template<class T, std::enable_if_t<std::is_base_of_v<ISteeringBehavior, T>>* = nullptr>
 	T* As()
 	{ return static_cast<T*>(this); }
 
+	bool ArrivedToTarget(ASteeringAgent &  agent);
+
 protected:
-	FTargetData Target;
+	FTargetData m_Target;
 };
 
 
@@ -40,13 +42,19 @@ protected:
 class Wander : public ISteeringBehavior
 {
 public:
-	Wander() = default;
+	Wander();
 	virtual ~Wander() = default;
-	virtual SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent& Agent)  override;
+	virtual SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent & Agent)  override;
+
+	float m_Radius = 200.f;
+	float m_Angle = 0.0f;
+
+	float m_TotalTimeElapsed = 0.0f;
+	float m_AngleUpdateTime = 0.4f;
+	float m_AngleInRadians = 0.0f;
+
 protected:
 };
-
-
 
 class Flee : public ISteeringBehavior
 {
@@ -83,8 +91,27 @@ public:
 	Arrive() = default;
 	virtual ~Arrive() = default;
 	virtual SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent& Agent)  override;
+	
+	float  m_StopRadius{100.f};
+	float m_SlowDownRadius{350.f};
+
 protected:
 };
+
+
+
+
+
+
+
+
+
+
+//   Bigger Radius then Slow down 
+// to a smaller one 
+// Do Wold Hunting Pattern :
+
+
 
 
 

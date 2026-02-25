@@ -39,3 +39,11 @@ void ALevel_Base::Tick(float DeltaTime)
 	// 		DEBUGRENDERER2D->DrawSolidCircle(MouseTarget.Position, 0.3f, { 0.f,0.f }, { 1.f,0.f,0.f },-0.8f);
 }
 
+FVector ALevel_Base::GetRamdomPosInVolumeBox()
+{
+	if(!TrimWorld) return FVector();
+
+	return TrimWorld->GetRamdomPosInTrimVolumne();
+
+}
+

@@ -7,6 +7,7 @@
 #include "Shared/Level_Base.h"
 #include "Level_Flocking.generated.h"
 
+
 UCLASS()
 class GAMEAIPROG_API ALevel_Flocking : public ALevel_Base
 {
@@ -17,6 +18,9 @@ public:
 	ALevel_Flocking();
 
 	virtual void Tick(float DeltaTime) override;
+
+	void SetTrimWorldSize(float NewSize);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -28,5 +32,10 @@ protected:
 	TUniquePtr<Flock> pFlock{};
 	
 	UPROPERTY(EditAnywhere, Category = "Flocking")
-	ASteeringAgent* pAgentToEvade{nullptr}; // non owning ref
+	ASteeringAgent * pAgentToEvade{nullptr}; // non owning ref
+
+
+	TUniquePtr<Seek> m_SeekBehavior;
+
+
 };

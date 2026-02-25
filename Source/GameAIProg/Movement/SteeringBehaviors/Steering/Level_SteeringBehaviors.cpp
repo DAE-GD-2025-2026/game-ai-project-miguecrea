@@ -180,7 +180,7 @@ void ALevel_SteeringBehaviors::Tick(float DeltaTime)
 	ImGui::End();
 #pragma endregion
 
-	for (ImGui_Agent& a : SteeringAgents)
+	for (ImGui_Agent & a : SteeringAgents)
 	{
 		if (a.Agent)
 		{
@@ -193,6 +193,9 @@ bool ALevel_SteeringBehaviors::AddAgent(BehaviorTypes BehaviorType, bool AutoOri
 {
 	ImGui_Agent ImGuiAgent = {};
 	ImGuiAgent.Agent = GetWorld()->SpawnActor<ASteeringAgent>(SteeringAgentClass, FVector{ 0,0,90 }, FRotator::ZeroRotator);
+
+
+
 	if (IsValid(ImGuiAgent.Agent))
 	{
 		ImGuiAgent.SelectedBehavior = static_cast<int>(BehaviorType);

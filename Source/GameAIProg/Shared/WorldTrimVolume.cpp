@@ -60,6 +60,18 @@ void AWorldTrimVolume::NotifyActorEndOverlap(AActor* OtherActor)
 
 }
 
+FVector AWorldTrimVolume::GetRamdomPosInTrimVolumne()
+{
+	const FVector Origin = TrimVolume->GetComponentLocation();
+	const FVector Extent = TrimVolume->GetScaledBoxExtent();
+
+	return FVector(
+		FMath::FRandRange(Origin.X - Extent.X, Origin.X + Extent.X),
+		FMath::FRandRange(Origin.Y - Extent.Y, Origin.Y + Extent.Y),
+		FMath::FRandRange(Origin.Z - Extent.Z, Origin.Z + Extent.Z)
+	);
+}
+
 // Called every frame
 void AWorldTrimVolume::Tick(float DeltaTime)
 {

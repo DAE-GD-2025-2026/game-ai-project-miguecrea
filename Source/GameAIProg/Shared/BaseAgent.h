@@ -48,6 +48,8 @@ public:
 	void SetMaxAngularSpeed(float maxAngularSpeed) { GetCharacterMovement()->RotationRate.Yaw = maxAngularSpeed; }
 
 	float GetAngularVelocity() const { return GetCharacterMovement()->GetLastUpdateRotation().Yaw - GetActorRotation().Yaw; }
+	
+	float m_IntialMaxLinearSpeed{};
 
 	bool IsAutoOrienting() const { return GetCharacterMovement()->bOrientRotationToMovement; }
 	void SetIsAutoOrienting(bool bAutoOrient) { GetCharacterMovement()->bOrientRotationToMovement = bAutoOrient; }

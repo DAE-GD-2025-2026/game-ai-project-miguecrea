@@ -50,7 +50,7 @@ void CellSpace::AddAgent(ASteeringAgent& Agent)
 	// TODO Add the agent to the correct cell
 }
 
-void CellSpace::UpdateAgentCell(ASteeringAgent& Agent, const FVector2D& OldPos)
+void CellSpace::UpdateAgentCell(ASteeringAgent & Agent, const FVector2D& OldPos)
 {
 	//TODO Check if the agent needs to be moved to another cell.
 	//TODO Use the calculated index for oldPos and currentPos for this

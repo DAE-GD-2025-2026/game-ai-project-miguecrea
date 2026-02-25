@@ -1,54 +1,148 @@
 #include "SteeringBehaviors.h"
 #include "GameAIProg/Movement/SteeringBehaviors/SteeringAgent.h"
 
-//SEEK
-//*******
-// TODO: Do the Week01 assignment :^)
-
-SteeringOutput Seek::CalculateSteering(float DeltaT, ASteeringAgent & Agent)
+#include "MACROS/MACRO.h"
+SteeringOutput Seek::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 {
+	SteeringOutput output{};
 
-    SteeringOutput output{};
+	UWorld * World = Agent.GetWorld();
+	FVector2D Pos{ Agent.GetPosition()};
+
+	FVector AgentPos = FVector{ Pos.X, Pos.Y, Agent.GetMeshZPosition() };
+	FVector Target{ m_Target.Position.X, m_Target.Position.Y,AgentPos.Z };
+
+	DRAW_CIRCLE(World, Target,10.f, FColor::Green, 7);
+	DRAW_CIRCLE(World, Target,50.f, FColor::Green, 7);
+	DRAW_VECTOR(World, AgentPos, AgentPos + Agent.GetActorForwardVector() * 100.f, FColor::Yellow);
 
 
-    output.LinearVelocity = AtoB(Agent.GetPosition(), Target.Position);
+	if (ArrivedToTarget(Agent))
+	{
+		return output;
+	}
 
-    return output;
+	output.LinearVelocity = AtoB(Pos, m_Target.Position);
+
+
+	return output;
 }
 
+
+
+Wander::Wander()
+{
+	m_AngleInRadians = FMath::RandRange(0.f, 2.f * PI);
+}
 SteeringOutput Wander::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 {
-    return SteeringOutput();
+
+
+	Agent.SetIsAutoOrienting(true);
+
+	SteeringOutput Output;
+
+	UWorld* World = Agent.GetWorld();
+
+
+	FVector2D Pos = Agent.GetPosition();
+	FVector AgentPos = FVector(Pos.X, Pos.Y, Agent.GetMeshZPosition());
+
+	FVector Forward = Agent.GetActorForwardVector() * 300.f;
+	FVector CircleCenter = AgentPos + Forward;
+
+
+	constexpr float AngleChangePerSecond = 35.f; // degrees per second
+
+	float RandomDeltaDegrees =
+		FMath::RandRange(-AngleChangePerSecond, AngleChangePerSecond);
+
+	float RandomDeltaRadians =
+		FMath::DegreesToRadians(RandomDeltaDegrees);
+
+	m_AngleInRadians += RandomDeltaRadians;
+
+
+	FVector2D TargetPoint;
+	TargetPoint.X = CircleCenter.X + FMath::Cos(m_AngleInRadians) * m_Radius;
+	TargetPoint.Y = CircleCenter.Y + FMath::Sin(m_AngleInRadians) * m_Radius;
+
+	FVector2D DesiredDirection = (TargetPoint - Pos).GetSafeNormal();
+	Output.LinearVelocity = DesiredDirection;
+
+	FVector circleDebug{ TargetPoint.X,TargetPoint.Y,AgentPos.Z };
+
+
+	DRAW_VECTOR(World, AgentPos, CircleCenter, FColor::Yellow);
+	DRAW_CIRCLE(World, CircleCenter, m_Radius, FColor::Green, 7);
+	DRAW_CIRCLE(World, circleDebug, 20.f, FColor::Red, 7);
+
+	return Output;
 }
 
 SteeringOutput Flee::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 {
-
-    SteeringOutput output{};
-    output.LinearVelocity = -AtoB(Agent.GetPosition(), Target.Position);
-
-    return  output;
+	SteeringOutput output{};
+	output.LinearVelocity = -AtoB(Agent.GetPosition(), m_Target.Position);
+	return  output;
 }
 
 SteeringOutput Pursuit::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 {
-    return SteeringOutput();
+	return SteeringOutput();
 }
 
 SteeringOutput Evade::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 {
-    return SteeringOutput();
+	return SteeringOutput();
 }
 
 SteeringOutput Arrive::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 {
-    return SteeringOutput();
+	SteeringOutput output;
+
+	FVector2D Pos = Agent.GetPosition();
+	FVector2D ToTarget = m_Target.Position - Pos;
+
+	float Distance = ToTarget.Size();
+
+	if (Distance < m_StopRadius)
+	{
+		output.LinearVelocity = FVector2D::ZeroVector;
+		return output;
+	}
+
+	float SpeedFactor = 1.f;
+
+	if (Distance < m_SlowDownRadius)
+	{
+		SpeedFactor = Distance / m_SlowDownRadius; // 0–1
+	}
+
+	output.LinearVelocity = ToTarget.GetSafeNormal() * SpeedFactor;
+
+	UWorld* World = Agent.GetWorld();
+	FVector Target{ m_Target.Position.X,m_Target.Position.Y,Agent.GetMeshZPosition() };
+
+	DRAW_CIRCLE(World, Target, m_SlowDownRadius, FColor::Black, 7);
+	DRAW_CIRCLE(World, Target, m_StopRadius, FColor::Green, 7);
+
+
+	return output;
 }
 
 
+bool ISteeringBehavior::ArrivedToTarget(ASteeringAgent & agent)
+{
+	if (AtoB(agent.GetPosition(), m_Target.Position).Size() <= 50.f)
+	{
+		return true;
+	}
+	return false;
+}
 
 // Helper Functions
-FVector2D ISteeringBehavior::AtoB(FVector2D self,FVector2D target)
+FVector2D ISteeringBehavior::AtoB(FVector2D self, FVector2D target)
 {
-    return  target - self;
+	return  target - self;
 }

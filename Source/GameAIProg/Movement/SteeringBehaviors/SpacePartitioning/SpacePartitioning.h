@@ -46,7 +46,6 @@ public:
 	void RenderCells()const;
 
 private:
-	// For debug draw purposes
 	UWorld* pWorld{};
 	
 	// Cells and properties
