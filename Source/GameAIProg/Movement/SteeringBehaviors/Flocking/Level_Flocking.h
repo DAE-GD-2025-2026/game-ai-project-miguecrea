@@ -35,6 +35,10 @@ protected:
 	ASteeringAgent * pAgentToEvade{nullptr}; // non owning ref
 
 
+	UPROPERTY(EditAnywhere, Category = "Flocking")
+	TSubclassOf< ASteeringAgent> m_FollowAgentBlueprint;
+
+
 	TUniquePtr<Seek> m_SeekBehavior;
 
 

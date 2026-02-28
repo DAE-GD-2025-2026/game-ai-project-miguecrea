@@ -22,9 +22,7 @@ SteeringOutput Seek::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 		return output;
 	}
 
-	output.LinearVelocity = AtoB(Pos, m_Target.Position);
-
-
+	output.LinearVelocity = AtoB(Pos, m_Target.Position).GetSafeNormal();
 	return output;
 }
 
@@ -67,15 +65,15 @@ SteeringOutput Wander::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	TargetPoint.X = CircleCenter.X + FMath::Cos(m_AngleInRadians) * m_Radius;
 	TargetPoint.Y = CircleCenter.Y + FMath::Sin(m_AngleInRadians) * m_Radius;
 
-	FVector2D DesiredDirection = (TargetPoint - Pos).GetSafeNormal();
+	FVector2D DesiredDirection = (TargetPoint - Pos);
 	Output.LinearVelocity = DesiredDirection;
 
 	FVector circleDebug{ TargetPoint.X,TargetPoint.Y,AgentPos.Z };
 
 
-	DRAW_VECTOR(World, AgentPos, CircleCenter, FColor::Yellow);
-	DRAW_CIRCLE(World, CircleCenter, m_Radius, FColor::Green, 7);
-	DRAW_CIRCLE(World, circleDebug, 20.f, FColor::Red, 7);
+	//DRAW_VECTOR(World, AgentPos, CircleCenter, FColor::Yellow);
+	//DRAW_CIRCLE(World, CircleCenter, m_Radius, FColor::Green, 7);
+	//DRAW_CIRCLE(World, circleDebug, 20.f, FColor::Red, 7);
 
 	return Output;
 }
@@ -94,7 +92,51 @@ SteeringOutput Pursuit::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 
 SteeringOutput Evade::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 {
-	return SteeringOutput();
+
+	SteeringOutput steering{};
+
+	UWorld * World = Agent.GetWorld();
+	FVector2D agentPos = Agent.GetPosition();
+
+	FVector AgentPosDebug = FVector(agentPos.X, agentPos.Y, Agent.GetMeshZPosition());
+	DRAW_CIRCLE(World, AgentPosDebug,m_EvadeRadius, FColor::Yellow,10);
+
+	FVector2D targetPos = m_Target.Position;
+	FVector2D toTarget = targetPos - agentPos;
+
+	float distance = toTarget.Size();
+
+	if (distance > m_EvadeRadius)
+	{
+		steering.IsValid = false;
+		return steering;
+	}
+
+	FVector2D agentVel = Agent.GetLinearVelocity();
+	FVector2D targetVel = m_Target.LinearVelocity;
+
+
+	//how fast it is pulling away or how much faster it is compared to me 
+	FVector2D relativeVel = targetVel - agentVel;
+	float relativeSpeed = relativeVel.Size();
+
+	//calculate prediction Time 
+
+	float predictionTime = 0.f;
+
+	if (relativeSpeed > 0.01f)
+	{
+		predictionTime = distance / relativeSpeed;
+	}
+
+	FVector2D futurePos = targetPos + targetVel * predictionTime;
+
+	// Flee
+	FVector2D fleeDir = agentPos - futurePos;
+
+	steering.LinearVelocity = fleeDir.GetSafeNormal();
+
+	return steering;
 }
 
 SteeringOutput Arrive::CalculateSteering(float DeltaT, ASteeringAgent& Agent)

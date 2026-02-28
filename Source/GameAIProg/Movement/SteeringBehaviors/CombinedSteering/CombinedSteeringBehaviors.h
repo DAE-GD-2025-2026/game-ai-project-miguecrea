@@ -13,9 +13,9 @@ public:
 	struct WeightedBehavior
 	{
 		ISteeringBehavior* pBehavior = nullptr;
-		float Weight = 0.f;
+		const float & Weight;
 
-		WeightedBehavior(ISteeringBehavior * const pBehavior, float Weight) :
+		WeightedBehavior(ISteeringBehavior * const pBehavior,const float & Weight) :
 			pBehavior(pBehavior),
 			Weight(Weight)
 		{};

@@ -48,6 +48,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<ASteeringAgent> SteeringAgentClass{};
 
+
+
+
+
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FSteeringParams MouseTarget{}; // UHT does not work with using statements, therefore this is called FSteeringParams
 	

@@ -66,10 +66,11 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 
+
+
 	USkeletalMeshComponent * m_MeshComponent;
 
-
-	float GetMeshZPosition();
+	float GetMeshZPosition() const ;
 
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 

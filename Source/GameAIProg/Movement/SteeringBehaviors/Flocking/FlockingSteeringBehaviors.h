@@ -32,7 +32,7 @@ private:
 class VelocityMatch final : public Seek
 {
 public:
-	VelocityMatch(Flock* const pFlock) :pFlock(pFlock) {};
+	VelocityMatch(Flock * const pFlock) :pFlock(pFlock) {};
 
 	//Cohesion Behavior
 	SteeringOutput CalculateSteering(float deltaT, ASteeringAgent& pAgent) override;

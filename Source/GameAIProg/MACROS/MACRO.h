@@ -1,5 +1,6 @@
 
-#include"DrawDebugHelpers.h"
+#include "DrawDebugHelpers.h"
+
 #define DRAW_CIRCLE(World, Pos, Radius, Color, Thickness) \
 DrawDebugCircle( \
 World, \
@@ -22,3 +23,15 @@ DrawDebugLine(World\
 ,End\
 ,Color); 
 
+
+#define DRAW_BOX(World, Center, HalfSizeX,HalfSizeY,Color) \
+DrawDebugBox( \
+    World, \
+    Center, \
+    FVector(HalfSizeX,HalfSizeY,1.f), \
+    Color, \
+    false, \
+    0.f, \
+    -3, \
+    8.f \
+)

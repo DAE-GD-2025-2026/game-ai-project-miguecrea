@@ -26,7 +26,7 @@ void AWorldTrimVolume::BeginPlay()
 	Super::BeginPlay();
 }
 
-void AWorldTrimVolume::NotifyActorEndOverlap(AActor* OtherActor)
+void AWorldTrimVolume::NotifyActorEndOverlap(AActor * OtherActor)
 {
 	Super::NotifyActorEndOverlap(OtherActor);
 	if (!bShouldTrimWorld) return;
@@ -34,6 +34,7 @@ void AWorldTrimVolume::NotifyActorEndOverlap(AActor* OtherActor)
 	FVector Origin;
 	FVector BoxExtent;
 	GetActorBounds(false, Origin, BoxExtent);
+
 	FVector2D const TopRight{Origin.X + BoxExtent.X, Origin.Y + BoxExtent.Y};
 	FVector2D const BottomLeft{Origin.X - BoxExtent.X, Origin.Y - BoxExtent.Y};
 	
@@ -72,18 +73,22 @@ FVector AWorldTrimVolume::GetRamdomPosInTrimVolumne()
 	);
 }
 
+FVector AWorldTrimVolume::GetCenterPoint()
+{
+	return CenterPoint;
+}
+
 // Called every frame
 void AWorldTrimVolume::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	if (!bShouldTrimWorld) return;
 	
-	FVector Origin;
-	FVector BoxExtent;
-	GetActorBounds(false, Origin, BoxExtent);
-	BoxExtent.Z = 1;
+
+	GetActorBounds(false, CenterPoint, ExtendOfBox);
+	ExtendOfBox.Z = 1;
 	
-	DrawDebugBox(GetWorld(), Origin, BoxExtent, FColor::Red);
+	DrawDebugBox(GetWorld(), CenterPoint, ExtendOfBox, FColor::Red,false,0,3,10.f);
 }
 
 void AWorldTrimVolume::SetTrimWorldSize(float NewSize)

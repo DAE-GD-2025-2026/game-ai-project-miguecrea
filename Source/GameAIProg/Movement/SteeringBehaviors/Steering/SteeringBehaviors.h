@@ -81,6 +81,8 @@ public:
 	Evade() = default;
 	virtual ~Evade() = default;
 	virtual SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent& Agent)  override;
+
+	float m_EvadeRadius = 400.f;
 protected:
 };
 

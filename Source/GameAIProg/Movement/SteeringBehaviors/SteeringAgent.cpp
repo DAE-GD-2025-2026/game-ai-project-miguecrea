@@ -35,6 +35,7 @@ void ASteeringAgent::Tick(float DeltaTime)
 
 	if (SteeringBehavior)
 	{
+
 		// The angular velocity is not being usedddd
 		SteeringOutput output = SteeringBehavior->CalculateSteering(DeltaTime, *this);
 		AddMovementInput(FVector{output.LinearVelocity, 0.f});
@@ -46,7 +47,9 @@ void ASteeringAgent::Tick(float DeltaTime)
 	}
 }
 
-float ASteeringAgent::GetMeshZPosition()
+
+
+float ASteeringAgent::GetMeshZPosition() const
 {
 	if (m_MeshComponent)
 	{

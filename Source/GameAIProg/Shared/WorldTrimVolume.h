@@ -34,6 +34,10 @@ public:
 	void SetTrimWorldSize(float NewSize);
 	float GetTrimWorldSize() const { return TrimWorldSize; }
 	FVector GetRamdomPosInTrimVolumne();
+	FVector GetCenterPoint();
+
+	FVector CenterPoint;
+	FVector ExtendOfBox;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -46,6 +50,8 @@ protected:
 	virtual void BeginPlay() override;
 
 	virtual void NotifyActorEndOverlap(AActor * OtherActor) override;
+	/*FVector CenterPoint;
+	FVector Extent;*/
 
 	
 };

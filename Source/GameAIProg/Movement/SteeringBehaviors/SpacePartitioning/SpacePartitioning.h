@@ -21,10 +21,18 @@ struct Cell final
 	Cell(float Left, float Bottom, float Width, float Height);
 
 	std::vector<FVector2D> GetRectPoints() const;
-	
 	// all the agents currently in this cell
 	std::list<ASteeringAgent*> Agents;
-	FRect BoundingBox;
+
+	FVector2D m_CenterPos;
+
+	float m_Width;
+	float m_Height;
+
+
+	float m_HalfWidth;
+	float m_HalfHeight;
+
 };
 
 // --- Partitioned Space ---
@@ -32,7 +40,7 @@ struct Cell final
 class CellSpace final
 {
 public:
-	CellSpace(UWorld* pWorld, float Width, float Height, int Rows, int Cols, int MaxEntities);
+	CellSpace(UWorld * pWorld, float Width, float Height, int Cols, int Rows, int MaxEntities,FVector2D Center,float MeshZPos);
 
 	void AddAgent(ASteeringAgent& Agent);
 	void UpdateAgentCell(ASteeringAgent& Agent, const FVector2D& OldPos);
@@ -45,12 +53,24 @@ public:
 	void EmptyCells();
 	void RenderCells()const;
 
+	int PositionToIndex(FVector2D const & Pos) const;
 private:
-	UWorld* pWorld{};
+	UWorld * pWorld{};
+	float m_MeshZPos;
+
+	FVector m_StartPosOfTheSquare{};
+	FVector m_CornerOfScreen{};
+
 	
+
+	FVector2D m_Center;
 	// Cells and properties
-	std::vector<Cell> Cells;
+	TArray<Cell> m_Cells;
 	FVector2D CellOrigin{};
+
+
+
+
 	
 	float SpaceWidth;
 	float SpaceHeight;
@@ -66,6 +86,5 @@ private:
 	int NrOfNeighbors;
 
 	// Helper functions
-	int PositionToIndex(FVector2D const & Pos) const;
 	bool DoRectsOverlap(FRect const& RectA, FRect const& RectB);
 };

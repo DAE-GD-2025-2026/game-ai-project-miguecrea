@@ -14,7 +14,6 @@ ALevel_Flocking::ALevel_Flocking()
 void ALevel_Flocking::SetTrimWorldSize(float newSize)
 {
 	TrimWorld->SetTrimWorldSize(newSize);
-
 }
 
 // Called when the game starts or when spawned
@@ -23,7 +22,7 @@ void ALevel_Flocking::BeginPlay()
 	Super::BeginPlay();
 
 	TrimWorld->bShouldTrimWorld = true;
-	pAgentToEvade = GetWorld()->SpawnActor<ASteeringAgent>(SteeringAgentClass, FVector{ 0,0,90 }, FRotator::ZeroRotator);
+	pAgentToEvade = GetWorld()->SpawnActor<ASteeringAgent>(m_FollowAgentBlueprint, FVector{ 0,0,90 }, FRotator::ZeroRotator);
 
 	m_SeekBehavior = MakeUnique<Seek>();
 	if (pAgentToEvade)
@@ -31,7 +30,8 @@ void ALevel_Flocking::BeginPlay()
 		pAgentToEvade->SetSteeringBehavior(m_SeekBehavior.Get());
 	}
 
-	pFlock = TUniquePtr<Flock>(new Flock(GetWorld(),SteeringAgentClass,this,FlockSize,TrimWorld->GetTrimWorldSize(),pAgentToEvade,true));
+	TrimWorld->SetTrimWorldSize(1800);
+	pFlock = TUniquePtr<Flock>(new Flock(GetWorld(),SteeringAgentClass,pAgentToEvade->GetMeshZPosition(), this, FlockSize, TrimWorld->GetTrimWorldSize(), pAgentToEvade, true, TrimWorld->GetCenterPoint()));
 }
 
 // Called every frame
@@ -43,7 +43,6 @@ void ALevel_Flocking::Tick(float DeltaTime)
 	pFlock->Tick(DeltaTime);
 	pFlock->RenderDebug();
 
-
 	//target would be better off Set OnMouse Click
 	if (m_SeekBehavior)
 	{
@@ -51,6 +50,6 @@ void ALevel_Flocking::Tick(float DeltaTime)
 	}
 
 	if (bUseMouseTarget)
-		pFlock->SetTarget_Seek(MouseTarget);
+    pFlock->SetTarget_Seek(MouseTarget);
 }
 
