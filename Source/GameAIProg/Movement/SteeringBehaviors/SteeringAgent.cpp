@@ -8,8 +8,6 @@
 ASteeringAgent::ASteeringAgent()
 {
 	PrimaryActorTick.bCanEverTick = true;
-
-
 }
 
 void ASteeringAgent::BeginPlay()

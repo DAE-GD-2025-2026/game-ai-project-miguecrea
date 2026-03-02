@@ -25,23 +25,11 @@ public:
 	void RenderDebug();
 	void ImGuiRender(ImVec2 const& WindowPos, ImVec2 const& WindowSize);
 
-
-
-	//NORMAL
-
-
-
-	// SPACE_PARTITION
-
 	std::unique_ptr<CellSpace> pPartitionedSpace{};
 	int NrOfCellsX{ 10 };
 
-
-	//QUAD_TREE
-
 	//const TArray<ASteeringAgent*> & GetNeighbors() const { return pPartitionedSpace->GetNeighbors(); }
 	//int GetNrOfNeighbors() const { return pPartitionedSpace->GetNrOfNeighbors(); }
-
 
 	void RegisterNeighbors(const ASteeringAgent * Agent);
 
@@ -52,22 +40,21 @@ public:
 	FVector2D GetAverageNeighborVelocity() const;
 	void SetTarget_Seek(FSteeringParams const & Target);
 
-
+	void DrawSquare(ASteeringAgent * Agent,float Radius);
 protected:
-
-
 
 private:
 
 	FSteeringParams m_SeekTarget;
 	UWorld * m_pWorld{nullptr};
 	int m_FlockSize{};
-	TArray<ASteeringAgent*> Agents{};
 
+	TArray<ASteeringAgent*> Agents{};
 	TArray<FVector2D> OldPositions{};
 
 	TArray<ASteeringAgent*> m_Neighbors{};
-	float m_NeighborhoodRadius{280.f};
+	float m_NeighborhoodRadius{250.f};
+	float m_EvadeRadius{400.f};
 	FVector m_VolumeBoxCenter{};
 	int m_NumberOfNeighbors{0};
 
@@ -81,29 +68,17 @@ private:
 	std::unique_ptr<BlendedSteering> pBlendedSteering{};
 	std::unique_ptr<PrioritySteering> pPrioritySteering{};
 	
-	float SeparationWeight = 0.4f;
-	float CohesionWeight = 0.3f;
-	float AlignmentWeight = 0.6f;
-	float SeekWeight = 0.f;
+	float SeparationWeight = 0.7f;
+	float CohesionWeight = 0.4f;
+	float AlignmentWeight = 0.4f;
+	float SeekWeight = 0.3f;
 	float WanderWeight = 0.7f;
 
 	// UI and rendering
-	bool DebugRenderSteering{false};
 	bool DebugRenderNeighborhood{true};
-	bool DebugRenderPartitions{true};
-
-	enum class Type
-	{
-		NO_OPTIMIZATION,
-		SPACE_PARTITIONING,
-		QUAD_TREE
-	};
-
-	Type m_Type{ Type::NO_OPTIMIZATION };
-
+	bool m_UseSpacePartition{true};
 
 	float m_MeshZPos;
-
     ALevel_Flocking * m_CurrentLevel;
 	TSubclassOf<ASteeringAgent> m_AgentBlueprint;
 	float m_TrimWorldSize = 0.f;

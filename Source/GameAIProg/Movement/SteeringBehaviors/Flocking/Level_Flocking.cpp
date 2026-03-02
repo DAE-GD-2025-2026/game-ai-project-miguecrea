@@ -9,8 +9,6 @@ ALevel_Flocking::ALevel_Flocking()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-
-
 void ALevel_Flocking::SetTrimWorldSize(float newSize)
 {
 	TrimWorld->SetTrimWorldSize(newSize);
@@ -37,7 +35,6 @@ void ALevel_Flocking::BeginPlay()
 // Called every frame
 void ALevel_Flocking::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
 
 	pFlock->ImGuiRender(WindowPos, WindowSize);
 	pFlock->Tick(DeltaTime);

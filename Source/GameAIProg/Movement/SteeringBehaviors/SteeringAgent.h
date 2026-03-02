@@ -62,9 +62,12 @@ protected:
 
 	virtual void BeginDestroy() override;
 
+	FVector2D m_PreviousFramePos{};
 public:
 	virtual void Tick(float DeltaTime) override;
 
+	FVector2D GetPreviousFramePos() { return m_PreviousFramePos;}
+	void  SetPreviousFramePos(FVector2D OldPos) { m_PreviousFramePos = OldPos;}
 
 
 

@@ -20,7 +20,10 @@ SteeringOutput Cohesion::CalculateSteering(float deltaT, ASteeringAgent& pAgent)
     }
 
 	FVector2D ToAveragePos = m_Target.Position - pAgent.GetPosition();
-	output.LinearVelocity = ToAveragePos.GetSafeNormal();
+    output.LinearVelocity = ToAveragePos.GetSafeNormal();
+
+
+	//output.LinearVelocity = ToAveragePos.GetSafeNormal();
 
 	return output;
 }

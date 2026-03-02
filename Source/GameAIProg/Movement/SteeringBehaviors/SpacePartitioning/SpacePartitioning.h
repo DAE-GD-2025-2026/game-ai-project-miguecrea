@@ -20,16 +20,11 @@ struct Cell final
 {
 	Cell(float Left, float Bottom, float Width, float Height);
 
-	std::vector<FVector2D> GetRectPoints() const;
 	// all the agents currently in this cell
-	std::list<ASteeringAgent*> Agents;
-
+	TArray<ASteeringAgent*> Agents;
 	FVector2D m_CenterPos;
-
 	float m_Width;
 	float m_Height;
-
-
 	float m_HalfWidth;
 	float m_HalfHeight;
 
@@ -40,20 +35,24 @@ struct Cell final
 class CellSpace final
 {
 public:
-	CellSpace(UWorld * pWorld, float Width, float Height, int Cols, int Rows, int MaxEntities,FVector2D Center,float MeshZPos);
+	CellSpace(UWorld * pWorld, float Width, float Height, int Cols, int Rows, int MaxEntities,FVector2D Center,float MeshZPos,float Radius);
 
 	void AddAgent(ASteeringAgent& Agent);
-	void UpdateAgentCell(ASteeringAgent& Agent, const FVector2D& OldPos);
+	void UpdateAgentCell(ASteeringAgent& Agent);
 
-	void RegisterNeighbors(ASteeringAgent& Agent, float QueryRadius);
-	const TArray<ASteeringAgent*>& GetNeighbors() const { return Neighbors; }
+	void RegisterNeighbors(ASteeringAgent& Agent, float QueryRadius,bool IsFirstOne = false);
+	const TArray<ASteeringAgent*> & GetNeighbors() const { return Neighbors; }
 	int GetNrOfNeighbors() const { return NrOfNeighbors; }
 
 	//empties the cells of entities
 	void EmptyCells();
 	void RenderCells()const;
 
+	void RenderFirstCellAgent();
+
 	int PositionToIndex(FVector2D const & Pos) const;
+	int PositionToIndexRow(FVector2D const & Pos) const;
+	int PositionToIndexColumn(FVector2D const & Pos) const;
 private:
 	UWorld * pWorld{};
 	float m_MeshZPos;
@@ -67,10 +66,12 @@ private:
 	// Cells and properties
 	TArray<Cell> m_Cells;
 	FVector2D CellOrigin{};
+     
+
+	int m_LastCellIndex{};
 
 
-
-
+	float m_PrecomputedRadius{};
 	
 	float SpaceWidth;
 	float SpaceHeight;
@@ -84,7 +85,4 @@ private:
 	// Members to avoid memory allocation on every frame
 	TArray<ASteeringAgent*> Neighbors;
 	int NrOfNeighbors;
-
-	// Helper functions
-	bool DoRectsOverlap(FRect const& RectA, FRect const& RectB);
 };

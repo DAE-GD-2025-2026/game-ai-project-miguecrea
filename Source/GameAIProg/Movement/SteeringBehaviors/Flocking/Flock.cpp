@@ -14,24 +14,24 @@ Flock::Flock(
 	ALevel_Flocking* CurrentLevel,
 	int FlockSize,
 	float WorldSize,
-	ASteeringAgent * const pAgentToEvade,
-	bool bTrimWorld,const FVector & CenterBox)
+	ASteeringAgent* const pAgentToEvade,
+	bool bTrimWorld, const FVector& CenterBox)
 	: m_pWorld{ pWorld }
 	, m_FlockSize{ FlockSize }
-	, m_MeshZPos{MeshZPos}
+	, m_MeshZPos{ MeshZPos }
 	, pAgentToEvade{ pAgentToEvade }
 	, m_CurrentLevel{ CurrentLevel }
 	, m_TrimWorldSize{ WorldSize }
 	, m_AgentBlueprint{ AgentClass }
-	,m_VolumeBoxCenter{CenterBox}
+	, m_VolumeBoxCenter{ CenterBox }
 {
 	Agents.Reserve(FlockSize);
 	m_Neighbors.SetNum(FlockSize);
 
 	if (!m_CurrentLevel)
 	{
-		UE_LOG(LogTemp, Error, TEXT(" Current Level Is Null"))
-	   return;
+		    UE_LOG(LogTemp, Error, TEXT(" Current Level Is Null"))
+			return;
 	}
 
 	pSeekBehavior = std::make_unique<Seek>();
@@ -41,6 +41,7 @@ Flock::Flock(
 
 	///EVADE  I snot added in blended 
 	pEvadeBehavior = std::make_unique<Evade>();
+	pEvadeBehavior->m_EvadeRadius = m_EvadeRadius;
 
 	pSeparationBehavior = std::make_unique<Separation>(this);
 	pCohesionBehavior = std::make_unique<Cohesion>(this);
@@ -49,7 +50,7 @@ Flock::Flock(
 
 	std::vector<BlendedSteering::WeightedBehavior> m_WeightedBehaviors{};
 	pBlendedSteering = std::make_unique<BlendedSteering>(m_WeightedBehaviors);
-	pBlendedSteering->AddBehaviour((BlendedSteering::WeightedBehavior{ pSeekBehavior.get(),SeekWeight}));
+	pBlendedSteering->AddBehaviour((BlendedSteering::WeightedBehavior{ pSeekBehavior.get(),SeekWeight }));
 	pBlendedSteering->AddBehaviour((BlendedSteering::WeightedBehavior{ pWanderBehavior.get(),WanderWeight }));
 	pBlendedSteering->AddBehaviour((BlendedSteering::WeightedBehavior{ pSeparationBehavior.get(),SeparationWeight }));
 	pBlendedSteering->AddBehaviour((BlendedSteering::WeightedBehavior{ pCohesionBehavior.get(),CohesionWeight }));
@@ -57,31 +58,28 @@ Flock::Flock(
 
 	std::vector<ISteeringBehavior*> m_SteeringBehaviors{};
 
-	m_SteeringBehaviors.push_back(pBlendedSteering.get());
 	m_SteeringBehaviors.push_back(pEvadeBehavior.get());
+	m_SteeringBehaviors.push_back(pBlendedSteering.get());
 
 	pPrioritySteering = std::make_unique<PrioritySteering>(m_SteeringBehaviors);
 
 	for (int i = 0; i < m_FlockSize; i++)
 	{
 		FVector RandomPose = m_CurrentLevel->GetRamdomPosInVolumeBox();
+
 		FActorSpawnParameters SpawnParameters{};
 		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		ASteeringAgent * SteeringAgent = m_pWorld->SpawnActor<ASteeringAgent>(m_AgentBlueprint, FVector{ RandomPose.X, RandomPose.Y, 90 }, FRotator::ZeroRotator, SpawnParameters);
+
 		if (SteeringAgent)
 		{
 			SteeringAgent->SetIsAutoOrienting(true);
 			SteeringAgent->SetActorTickEnabled(false);
-			SteeringAgent->SetSteeringBehavior(pBlendedSteering.get());
-
-		//	SteeringAgent->SetSteeringBehavior(pPrioritySteering.get());
+			SteeringAgent->SetSteeringBehavior(pPrioritySteering.get());
 			Agents.Add(SteeringAgent);
 		}
-
-
 	}
-
-	pPartitionedSpace = std::make_unique<CellSpace>(m_pWorld,m_TrimWorldSize, m_TrimWorldSize,11,11, m_FlockSize, FVector2D{ m_VolumeBoxCenter.X,m_VolumeBoxCenter.Y },m_MeshZPos);
+	pPartitionedSpace = std::make_unique<CellSpace>(m_pWorld, m_TrimWorldSize, m_TrimWorldSize, 11, 11, m_FlockSize, FVector2D{ m_VolumeBoxCenter.X,m_VolumeBoxCenter.Y }, m_MeshZPos,m_NeighborhoodRadius * m_NeighborhoodRadius);
 
 }
 
@@ -93,34 +91,62 @@ Flock::~Flock()
 void Flock::Tick(float DeltaTime)
 {
 
-
-
-	float PosOgMovingAgent = pAgentToEvade->GetPosition().X;
-
-	//UE_LOG(LogTemp,Warning,TEXT("%f"), PosOgMovingAgent)
-
 	for (ASteeringAgent * Agent : Agents)
 	{
-	
-		RegisterNeighbors(Agent);
+		if (!IsValid(Agent)) continue;
+
+		if (m_UseSpacePartition)
+		{
+			if (pPartitionedSpace)
+			{
+				pPartitionedSpace->UpdateAgentCell(*Agent);
+				bool IsFirstOne = Agent == Agents[0];
+				pPartitionedSpace->RegisterNeighbors(*Agent, m_NeighborhoodRadius, IsFirstOne);
+				m_Neighbors = pPartitionedSpace->GetNeighbors();
+				m_NumberOfNeighbors = pPartitionedSpace->GetNrOfNeighbors();
+			}
+		}
+		else
+		{
+			RegisterNeighbors(Agent);
+		}
+
 		Agent->Tick(DeltaTime);
+		Agent->SetPreviousFramePos(Agent->GetPosition());
+
 	}
 
-	
+	FTargetData Data;
+	Data.LinearVelocity = pAgentToEvade->GetLinearVelocity();
+	Data.AngularVelocity = pAgentToEvade->GetAngularVelocity();
+	Data.Position = pAgentToEvade->GetPosition();
 
-	if (pPartitionedSpace)
+	pEvadeBehavior->SetTarget(Data);
+
+
+
+	//AGent to evade Circle 
+	FVector RenderPos{ pAgentToEvade->GetPosition().X, pAgentToEvade->GetPosition().Y,m_MeshZPos};
+	DRAW_CIRCLE(m_pWorld, RenderPos, m_NeighborhoodRadius, FColor::Yellow, 10);
+
+
+
+	//first Agent Rect 
+	if (m_UseSpacePartition)
 	{
-		FVector2D Pos = pAgentToEvade->GetPosition();
-		int Index = pPartitionedSpace->PositionToIndex(Pos);
-		//UE_LOG(LogTemp,Warning,TEXT("%d"),Index)
+	FVector FirstAgentRect{Agents[0]->GetPosition().X,Agents[0]->GetPosition().Y,m_MeshZPos};
+ 	DRAW_BOX(m_pWorld,FirstAgentRect,m_NeighborhoodRadius, m_NeighborhoodRadius, FColor::Magenta);
 
 	}
 
+	//rendering of cells 
 
+	if (m_UseSpacePartition)
+	{
+	pPartitionedSpace->RenderCells();
 
+	}
 
-	UpdateIamguiTrimVariable();
-	
 }
 
 void Flock::UpdateIamguiTrimVariable()
@@ -133,11 +159,11 @@ void Flock::UpdateIamguiTrimVariable()
 
 void Flock::RenderDebug()
 {
-	pPartitionedSpace->RenderCells();
+	
 
 }
 
-void Flock::ImGuiRender(ImVec2 const& WindowPos, ImVec2 const & WindowSize)
+void Flock::ImGuiRender(ImVec2 const& WindowPos, ImVec2 const& WindowSize)
 {
 #ifdef PLATFORM_WINDOWS
 #pragma region UI
@@ -173,9 +199,11 @@ void Flock::ImGuiRender(ImVec2 const& WindowPos, ImVec2 const & WindowSize)
 		ImGui::Text("Flocking");
 		ImGui::Spacing();
 
-		ImGui::Checkbox("Render Steering", &DebugRenderSteering);
+		//ImGui::Checkbox("Render Steering", &DebugRenderSteering);
+		// 
+		//ImGui::Checkbox("Use Space Partition", &m_UseSpacePartition);
+
 		ImGui::Checkbox("DebugRender Neighborh", &DebugRenderNeighborhood);
-		ImGui::Checkbox("Debug Render Partition", &DebugRenderPartitions);
 
 		ImGui::Text("Behavior Weights");
 		ImGui::Spacing();
@@ -188,8 +216,8 @@ void Flock::ImGuiRender(ImVec2 const& WindowPos, ImVec2 const & WindowSize)
 
 		ImGui::Spacing();
 
-		ImGui::Text("Trim WorldSize");
-		ImGui::SliderFloat("Trim", &m_TrimWorldSize, 0.0f, 4000.f);
+		//ImGui::Text("Trim WorldSize");
+		//ImGui::SliderFloat("Trim", &m_TrimWorldSize, 0.0f, 4000.f);
 
 
 		ImGui::End();
@@ -198,7 +226,7 @@ void Flock::ImGuiRender(ImVec2 const& WindowPos, ImVec2 const & WindowSize)
 #endif
 }
 
-void Flock::RegisterNeighbors(const ASteeringAgent * CurrentAgent)
+void Flock::RegisterNeighbors(const ASteeringAgent* CurrentAgent)
 {
 	m_NumberOfNeighbors = 0;
 
@@ -228,8 +256,8 @@ void Flock::RegisterNeighbors(const ASteeringAgent * CurrentAgent)
 			FVector RenderPos{ Pos.X,Pos.Y,m_Neighbors[i]->GetMeshZPosition() };
 			DRAW_CIRCLE(m_pWorld, RenderPos, 60.f, FColor::Blue, 10);
 		}
-		FVector2D Pos = { CurrentAgent->GetPosition()};
-		FVector RenderPos{ Pos.X,Pos.Y,m_MeshZPos};
+		FVector2D Pos = { CurrentAgent->GetPosition() };
+		FVector RenderPos{ Pos.X,Pos.Y,m_MeshZPos };
 		DRAW_CIRCLE(m_pWorld, RenderPos, m_NeighborhoodRadius, FColor::Green, 10);
 		DRAW_CIRCLE(m_pWorld, RenderPos, 70.f, FColor::Red, 10);
 
@@ -238,8 +266,8 @@ void Flock::RegisterNeighbors(const ASteeringAgent * CurrentAgent)
 
 FVector2D Flock::GetAverageNeighborPos() const
 {
-	FVector2D avgPosition = { FVector2D::ZeroVector};
-	
+	FVector2D avgPosition = { FVector2D::ZeroVector };
+
 	for (int i{ 0 }; i < m_NumberOfNeighbors; ++i)
 	{
 		avgPosition += m_Neighbors[i]->GetPosition();
@@ -266,9 +294,17 @@ FVector2D Flock::GetAverageNeighborVelocity() const
 	return avgVelocity;
 }
 
-void Flock::SetTarget_Seek(FSteeringParams const & Target)
+void Flock::SetTarget_Seek(FSteeringParams const& Target)
 {
 	m_SeekTarget = Target;
+}
+
+void Flock::DrawSquare(ASteeringAgent * Agent,float Radius)
+{
+
+	FVector Center{ Agent->GetPosition().X, Agent->GetPosition().Y,m_MeshZPos};
+
+	DRAW_BOX(m_pWorld,Center, Radius, Radius, FColor::Emerald);
 }
 
 

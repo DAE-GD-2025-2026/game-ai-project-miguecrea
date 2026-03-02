@@ -23,6 +23,7 @@ SteeringOutput Seek::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	}
 
 	output.LinearVelocity = AtoB(Pos, m_Target.Position).GetSafeNormal();
+//	output.LinearVelocity = AtoB(Pos, m_Target.Position);
 	return output;
 }
 
@@ -90,7 +91,7 @@ SteeringOutput Pursuit::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	return SteeringOutput();
 }
 
-SteeringOutput Evade::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
+SteeringOutput Evade::CalculateSteering(float DeltaT, ASteeringAgent & Agent)
 {
 
 	SteeringOutput steering{};
@@ -99,7 +100,9 @@ SteeringOutput Evade::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	FVector2D agentPos = Agent.GetPosition();
 
 	FVector AgentPosDebug = FVector(agentPos.X, agentPos.Y, Agent.GetMeshZPosition());
-	DRAW_CIRCLE(World, AgentPosDebug,m_EvadeRadius, FColor::Yellow,10);
+
+	
+//	DRAW_CIRCLE(World, AgentPosDebug,m_EvadeRadius, FColor::Yellow,10);
 
 	FVector2D targetPos = m_Target.Position;
 	FVector2D toTarget = targetPos - agentPos;
@@ -109,7 +112,10 @@ SteeringOutput Evade::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	if (distance > m_EvadeRadius)
 	{
 		steering.IsValid = false;
-		return steering;
+	}
+	else if (distance < m_EvadeRadius)
+	{
+		steering.IsValid = true;
 	}
 
 	FVector2D agentVel = Agent.GetLinearVelocity();
