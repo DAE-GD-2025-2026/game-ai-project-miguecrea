@@ -182,7 +182,14 @@ SteeringOutput Arrive::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 
 bool ISteeringBehavior::ArrivedToTarget(ASteeringAgent & agent)
 {
-	if (AtoB(agent.GetPosition(), m_Target.Position).Size() <= 50.f)
+
+
+
+	float ToTarget = AtoB(agent.GetPosition(), m_Target.Position).Size();
+
+	//UE_LOG(LogTemp,Warning,TEXT(" distance to target is %f"),ToTarget)
+		
+	if(ToTarget <= 50.f || FMath::IsNearlyZero(ToTarget))
 	{
 		return true;
 	}

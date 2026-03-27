@@ -20,7 +20,7 @@ public:
 	FVector2D AtoB(FVector2D self,FVector2D target);
 	template<class T, std::enable_if_t<std::is_base_of_v<ISteeringBehavior, T>>* = nullptr>
 	T* As()
-	{ return static_cast<T*>(this); }
+	{ return static_cast<T*>(this);}
 
 	bool ArrivedToTarget(ASteeringAgent &  agent);
 
@@ -81,9 +81,7 @@ public:
 	Evade() = default;
 	virtual ~Evade() = default;
 	virtual SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent& Agent)  override;
-
 	float m_EvadeRadius = 400.f;
-	
 protected:
 };
 
@@ -95,6 +93,7 @@ public:
 	virtual ~Arrive() = default;
 	virtual SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent& Agent)  override;
 	
+	void SetTargetRadius(float newstopRadius) { m_StopRadius = newstopRadius; }
 	float  m_StopRadius{100.f};
 	float m_SlowDownRadius{350.f};
 
