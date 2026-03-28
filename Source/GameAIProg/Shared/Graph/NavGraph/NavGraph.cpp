@@ -70,21 +70,20 @@ int GameAI::NavGraph::GetNodeIdFromEdgeIndex(int EdgeIdx) const
 	return Graphs::InvalidNodeId;
 }
 
-std::optional<int> GameAI::NavGraph::GetClosestNodeIndex(FVector2D const& DesiredPosition)
+std::optional<int> GameAI::NavGraph::GetClosestNodeIndex(FVector2D const & DesiredPosition, NavGraph* const pNavGraph)
 {
 	FVector2D OutPosition;
 	const TriPolygon::Triangle* closestTriangle = pNavPoly->GetClosestTriangleToPosition(DesiredPosition, OutPosition);
 
 	if (closestTriangle == nullptr)
 	{
-
 		UE_LOG(LogTemp, Warning, TEXT(" Triangle Is  Null"))
 			return std::nullopt;
 	}
 
 
 	std::vector<Node*> triangleNodes;
-	for (const TriPolygon::Edge& edge : closestTriangle->GetEdges())
+	for (const TriPolygon::Edge & edge : closestTriangle->GetEdges())
 	{
 		uint64 key = MakeEdgeKey(edge.EdgeIndices[0], edge.EdgeIndices[1]);
 		auto it = edgeToNode.find(key);
@@ -97,21 +96,30 @@ std::optional<int> GameAI::NavGraph::GetClosestNodeIndex(FVector2D const& Desire
 	// ClosestTriangle Has No Nodes 
 	if (triangleNodes.empty()) return std::nullopt;
 
-	int closestIndex = -1;
-	float closestDist = std::numeric_limits<float>::max();
+	int NodeIndex = pNavGraph->AddNode(std::make_unique<Node>(DesiredPosition));
 
-	for (Node* node : triangleNodes)
-	{
-		float dist = FVector2D::Distance(node->GetPosition(), OutPosition);
-
-		if (dist < closestDist)
+	
+		for (Node* triNode : triangleNodes)
 		{
-			closestDist = dist;
-			closestIndex = node->GetId();
-		}
-	}
+			float dist = FVector2D::Distance(DesiredPosition, triNode->GetPosition());
 
-	return closestIndex;
+			pNavGraph->AddConnection(NodeIndex, triNode->GetId());
+			if (auto * conn = pNavGraph->FindConnection(NodeIndex, triNode->GetId()))
+			{
+				conn->SetWeight(dist);
+			}
+
+			pNavGraph->AddConnection(triNode->GetId(), NodeIndex);
+			if (auto* conn = pNavGraph->FindConnection(triNode->GetId(), NodeIndex))
+			{
+				conn->SetWeight(dist);
+			}
+		}
+
+	
+
+
+	return NodeIndex;
 
 
 }

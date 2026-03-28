@@ -10,44 +10,61 @@
 using namespace GameAI;
 
 std::vector<FVector2D> NavMeshPathfinding::FindPath(const FVector2D& startPos, const FVector2D& endPos,
-	NavGraph* const pNavGraph, std::vector<FVector2D>& debugNodePositions, std::vector<NavLine>& debugPortals)
+	NavGraph * const pNavGraph, std::vector<FVector2D>& debugNodePositions, std::vector<NavLine> & debugPortals, UWorld * world)
 {
 	auto Graph = pNavGraph->Clone();
 	std::vector<FVector2D> finalPath{};
-	std::optional<int> ClosestNodeToStart = Graph->GetClosestNodeIndex(startPos);
-	std::optional<int> ClosestNodeToEnd = Graph->GetClosestNodeIndex(endPos);
+	std::optional<int> StartNodeIndex = Graph->GetClosestNodeIndex(startPos,Graph.get());
+	std::optional<int> EndNodeIndex = Graph->GetClosestNodeIndex(endPos,Graph.get());
 
-	if (!ClosestNodeToStart.has_value() || !ClosestNodeToEnd.has_value())
+	if (!StartNodeIndex.has_value() || !EndNodeIndex.has_value())
 	{
 		UE_LOG(LogTemp, Error, TEXT(" F closes to start or closest to End is null"));
 
 		return finalPath;
 	}
 
-	int EndNodeIndex = Graph->AddNode(std::make_unique<Node>(endPos));
 
-	Graph->AddConnection(EndNodeIndex, ClosestNodeToEnd.value());
-	Graph->AddConnection(ClosestNodeToEnd.value(), EndNodeIndex);
+	FVector2D outPos1, outPos2;
+	auto* startTri = Graph->GetNavPolygon()->GetClosestTriangleToPosition(startPos, outPos1);
+	auto* endTri = Graph->GetNavPolygon()->GetClosestTriangleToPosition(endPos, outPos2);
 
-	AStar pathfinder = AStar(Graph.get(), GameAI::HeuristicFunctions::Manhattan);
-	Node * StartPath = Graph->GetNode(ClosestNodeToStart.value()).get();
-	Node* EndPath{ Graph->GetNode(EndNodeIndex).get() };
+	if (startTri == endTri && startTri != nullptr)
+	{
+		// Same triangle — no obstacles, go straight
+		finalPath.push_back(startPos);
+		finalPath.push_back(endPos);
+		return finalPath;
+	}
+
+
+
+
+	AStar pathfinder = AStar(Graph.get(), GameAI::HeuristicFunctions::Euclidean);
+
+
+	int StartIndex = StartNodeIndex.value();
+	Node * StartPath = Graph->GetNode(StartIndex).get();
+
+
+	int EndIndex = EndNodeIndex.value();
+
+	Node* EndPath{ Graph->GetNode(EndIndex).get() };
 
 	std::vector<GameAI::Node*> Path = pathfinder.FindPath(StartPath, EndPath);
 
 	if (!Path.empty())
 	{
 
-		for (GameAI::Node* node : Path)
+		for (GameAI::Node * node : Path)
 		{
 			finalPath.push_back(node->GetPosition());
 		}
 
 		UE_LOG(LogTemp, Warning, TEXT(" Path is not Empty %d "), static_cast<int>(finalPath.size()));
 
-
-		debugPortals = SSFA::FindPortals(Path, *Graph->GetNavPolygon(), Graph.get());//is this the right graph 
-	//	finalPath = SSFA::OptimizePortals(debugPortals, *Graph->GetNavPolygon());
+		debugPortals = SSFA::FindPortals(Path, *Graph->GetNavPolygon(), Graph.get(),startPos);//is this the right graph 
+		//finalPath = SSFA::OptimizePortals(debugPortals, *Graph->GetNavPolygon(),world);
 
 
 	}
@@ -57,13 +74,5 @@ std::vector<FVector2D> NavMeshPathfinding::FindPath(const FVector2D& startPos, c
 
 	}
 	return finalPath;
-}
-
-std::vector<FVector2D> NavMeshPathfinding::FindPath(const FVector2D& startPos, const FVector2D& endPos, NavGraph* const pNavGraph)
-{
-	std::vector<FVector2D> debugNodePositions{};
-	std::vector<NavLine> debugPortals{};
-
-	return FindPath(startPos, endPos, pNavGraph, debugNodePositions, debugPortals);
 }
 

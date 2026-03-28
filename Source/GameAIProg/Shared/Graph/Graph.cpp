@@ -295,6 +295,7 @@ namespace GameAI
         AddConnection(std::make_unique<Connection>(FromNodeId, ToNodeId));
     }
 
+
     bool Graph::RemoveConnection(Connection const* ConnectionToRemove)
     {
         // Stored for later use

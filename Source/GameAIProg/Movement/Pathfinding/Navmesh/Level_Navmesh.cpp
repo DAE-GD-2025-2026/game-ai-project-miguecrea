@@ -105,7 +105,7 @@ void ALevel_Navmesh::Tick(float DeltaTime)
 				GetWorld(), 
 				FVector{DebugDrawPath[PathIdx - 1], 5.0f}, 
 				FVector{DebugDrawPath[PathIdx], 5.0f}, 
-				FColor::Magenta, false, -1, 1, 10);
+				FColor::Magenta, false, -1, 50,10);
 		}
 	}
 	
@@ -125,7 +125,7 @@ void ALevel_Navmesh::Tick(float DeltaTime)
 				 FVector{ portal.P1.X, portal.P1.Y, 0.f },
 				 70.f,           // radius
 				 60,              // segments
-				 FColor::Blue,
+				 FColor::Purple,
 				 false,           // persistent
 				 -1.f,            // lifetime
 				 20,              // depth priority
@@ -142,7 +142,7 @@ void ALevel_Navmesh::Tick(float DeltaTime)
 				 FVector{ portal.P2.X, portal.P2.Y, 0.f },
 				 70.f,           // radius
 				 60,              // segments
-				 FColor::Red,
+				 FColor::Yellow,
 				 false,           // persistent
 				 -1.f,            // lifetime
 				 20,              // depth priority
@@ -277,7 +277,7 @@ TArray<TArray<FVector>> ALevel_Navmesh::ExtractNavMeshTris() const
 void ALevel_Navmesh::SetTarget()
 {
 	GameAI::NavMeshPathfinding Pathfinder{}; 
-	std::vector<FVector2D> Path = Pathfinder.FindPath(Agent->GetPosition(), FVector2D{ LatestMouseWorldPos }, NavigationGraph.get(),m_DebugNodePositions,m_Portals);
+	std::vector<FVector2D> Path = Pathfinder.FindPath(Agent->GetPosition(), FVector2D{ LatestMouseWorldPos }, NavigationGraph.get(),m_DebugNodePositions,m_Portals,GetWorld());
 
 	m_Start = Pathfinder.StartNode;
 	m_End = Pathfinder.EndNode;

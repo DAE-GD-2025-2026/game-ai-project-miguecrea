@@ -15,7 +15,7 @@ namespace GameAI
 		std::unique_ptr<NavGraph> Clone() const;
 		TriPolygon const * GetNavPolygon() const {return pNavPoly.get();}
 		int GetNodeIdFromEdgeIndex(int EdgeIdx) const;
-		std::optional<int> GetClosestNodeIndex(FVector2D const& DesiredPosition);
+		std::optional<int> GetClosestNodeIndex(FVector2D const& DesiredPosition, NavGraph * const pNavGraph);
 
 		std::unordered_map<uint64,TriPolygon::Triangle> m_Dictionary{};
 		std::unordered_map<uint64, Node*> edgeToNode;
