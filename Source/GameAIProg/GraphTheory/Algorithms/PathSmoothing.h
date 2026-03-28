@@ -9,6 +9,17 @@
 
 namespace GameAI
 {
+
+    static float TriArea2(const FVector2D& a, const FVector2D& b, const FVector2D& c)
+    {
+       
+        const float ax = b.X - a.X;
+        const float ay = b.Y - a.Y;
+        const float bx = c.X - a.X;
+        const float by = c.Y - a.Y;
+        return ax * by - bx * ay;  // flipped from bx*ay - ax*by
+    }
+
 	class SSFA final
 	{
 	public:
@@ -35,7 +46,8 @@ namespace GameAI
                     float cross = pathDir.X * edgeDir.Y - pathDir.Y * edgeDir.X;
 
                     NavLine Portal;
-                    if (cross < 0)
+               
+                    if (cross > 0)
                     {
                         Portal.P1 = Vertex1;
                         Portal.P2 = Vertex2;
@@ -66,20 +78,19 @@ namespace GameAI
                 return Path;
             }
 
-            FVector2D apex = Portals[0].P1;
+            FVector2D portalApex = Portals[0].P1;
+            FVector2D portalLeft = Portals[0].P2;
+            FVector2D portalRight = Portals[0].P1;
             int apexIndex = 0;
+            int leftIndex = 0;
+            int rightIndex = 0;
 
-            FVector2D rightLeg = Portals[1].P1;
-            FVector2D leftLeg = Portals[1].P2;
-            int rightIndex = 1;
-            int leftIndex = 1;
-
-            Path.push_back(apex);
+            Path.push_back(portalApex);
 
             int safetyCounter = 0;
             const int maxIterations = static_cast<int>(Portals.size()) * 10;
 
-            for (int i = 2; i <= static_cast<int>(Portals.size()) - 1; ++i)
+            for (int i = 1; i < static_cast<int>(Portals.size()); ++i)
             {
                 if (++safetyCounter > maxIterations)
                 {
@@ -87,92 +98,67 @@ namespace GameAI
                     break;
                 }
 
-                // Debug at top
-                DrawDebugLine(world,
-                    FVector{ apex.X, apex.Y, 20.f },
-                    FVector{ rightLeg.X, rightLeg.Y, 20.f },
+                FVector2D left = Portals[i].P1;
+                FVector2D right = Portals[i].P2;
+
+
+                // Debug
+              /*  DrawDebugLine(world,
+                    FVector{ portalApex.X, portalApex.Y, 20.f },
+                    FVector{ portalRight.X, portalRight.Y, 20.f },
                     FColor::Red, false, 5.f);
                 DrawDebugLine(world,
-                    FVector{ apex.X, apex.Y, 20.f },
-                    FVector{ leftLeg.X, leftLeg.Y, 20.f },
-                    FColor::Blue, false, 5.f);
+                    FVector{ portalApex.X, portalApex.Y, 20.f },
+                    FVector{ portalLeft.X, portalLeft.Y, 20.f },
+                    FColor::Blue, false, 5.f);*/
 
-                FVector2D newRight;
-                FVector2D newLeft;
+                UE_LOG(LogTemp, Warning, TEXT("i=%d apex=(%f,%f) rLeg=(%f,%f) lLeg=(%f,%f)"),
+                    i, portalApex.X, portalApex.Y,
+                    portalRight.X, portalRight.Y,
+                    portalLeft.X, portalLeft.Y);
 
-                if (i == static_cast<int>(Portals.size()) - 1)
+                // --- RIGHT ---
+                if (TriArea2(portalApex, portalRight, right) <= 0.0f)
                 {
-                    newRight = Portals[i].P1;
-                    newLeft = Portals[i].P1;
-                }
-                else
-                {
-                    newRight = Portals[i].P1;
-                    newLeft = Portals[i].P2;
-                }
-
-                // --- RIGHT CHECK --- (flipped signs)
-                FVector2D apexToRight = rightLeg - apex;
-                FVector2D apexToNewRight = newRight - apex;
-                float crossRight = apexToRight.X * apexToNewRight.Y - apexToRight.Y * apexToNewRight.X;
-
-                if (crossRight <= 0.f)
-                {
-                    FVector2D apexToLeft = leftLeg - apex;
-                    float crossCheck = apexToLeft.X * apexToNewRight.Y - apexToLeft.Y * apexToNewRight.X;
-
-                    if (crossCheck > 0.f)
+                    if (portalApex == portalRight || TriArea2(portalApex, portalLeft, right) > 0.0f)
                     {
-                        rightLeg = newRight;
+                        portalRight = right;
                         rightIndex = i;
                     }
                     else
                     {
-                        Path.push_back(leftLeg);
-                        apex = leftLeg;
+                        Path.push_back(portalLeft);
+                        portalApex = portalLeft;
                         apexIndex = leftIndex;
 
-                        rightLeg = apex;
-                        leftLeg = apex;
-                        rightIndex = apexIndex;
+                        portalLeft = portalApex;
+                        portalRight = portalApex;
                         leftIndex = apexIndex;
+                        rightIndex = apexIndex;
 
                         i = apexIndex;
                         continue;
                     }
                 }
 
-                // --- LEFT CHECK --- (flipped signs)
-                FVector2D apexToLeftCurrent = leftLeg - apex;
-                FVector2D apexToNewLeft = newLeft - apex;
-                float crossLeft = apexToLeftCurrent.X * apexToNewLeft.Y - apexToLeftCurrent.Y * apexToNewLeft.X;
-
-                UE_LOG(LogTemp, Warning, TEXT("i=%d crossRight=%f crossLeft=%f apex=(%f,%f) rLeg=(%f,%f) lLeg=(%f,%f)"),
-                    i, crossRight, crossLeft,
-                    apex.X, apex.Y,
-                    rightLeg.X, rightLeg.Y,
-                    leftLeg.X, leftLeg.Y);
-
-                if (crossLeft >= 0.f)
+                // --- LEFT ---
+                if (TriArea2(portalApex, portalLeft, left) >= 0.0f)
                 {
-                    FVector2D apexToRightCurrent = rightLeg - apex;
-                    float crossCheck = apexToRightCurrent.X * apexToNewLeft.Y - apexToRightCurrent.Y * apexToNewLeft.X;
-
-                    if (crossCheck < 0.f)
+                    if (portalApex == portalLeft || TriArea2(portalApex, portalRight, left) < 0.0f)
                     {
-                        leftLeg = newLeft;
+                        portalLeft = left;
                         leftIndex = i;
                     }
                     else
                     {
-                        Path.push_back(rightLeg);
-                        apex = rightLeg;
+                        Path.push_back(portalRight);
+                        portalApex = portalRight;
                         apexIndex = rightIndex;
 
-                        rightLeg = apex;
-                        leftLeg = apex;
-                        rightIndex = apexIndex;
+                        portalLeft = portalApex;
+                        portalRight = portalApex;
                         leftIndex = apexIndex;
+                        rightIndex = apexIndex;
 
                         i = apexIndex;
                         continue;
@@ -180,7 +166,6 @@ namespace GameAI
                 }
             }
 
-            // Always add end point
             FVector2D endPoint = Portals.back().P1;
             if (Path.empty() || FVector2D::Distance(Path.back(), endPoint) > 1.f)
             {

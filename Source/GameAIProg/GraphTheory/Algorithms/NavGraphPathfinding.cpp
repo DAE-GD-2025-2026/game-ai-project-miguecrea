@@ -64,8 +64,7 @@ std::vector<FVector2D> NavMeshPathfinding::FindPath(const FVector2D& startPos, c
 		UE_LOG(LogTemp, Warning, TEXT(" Path is not Empty %d "), static_cast<int>(finalPath.size()));
 
 		debugPortals = SSFA::FindPortals(Path, *Graph->GetNavPolygon(), Graph.get(),startPos);//is this the right graph 
-		//finalPath = SSFA::OptimizePortals(debugPortals, *Graph->GetNavPolygon(),world);
-
+		finalPath = SSFA::OptimizePortals(debugPortals, *Graph->GetNavPolygon(),world);
 
 	}
 	else
